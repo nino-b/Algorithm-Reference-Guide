@@ -12,12 +12,22 @@
   */
 
 /**
-* A dynamic set S is represented by a direct-address table T of length m. Describe a procedure that finds the maximum element of S. What is the worst-case performance of your procedure?
-
-* - We should take in consideration that array might not be fully populated and there might be empty slots.
-* - We should look for largest non empty slot. To do so, we need to iterate backwards and first non empty slot will be largest element (because keys correspond to values).
-* - Worst case scenario, there won't be any element in the array and we would have to iterate over whole array.
-* - So search would be linear O(n) where n is array's length.
+ * # Problem:
+ * A dynamic set S is represented by a direct-address table T of length m. 
+ * Describe a procedure that finds the maximum element of S. 
+ * What is the worst-case performance of your procedure?
+ * 
+ * # Solution, step by step guide:
+ * - Array might not be fully populated and there might be empty slots.
+ * - Look for largest non empty slot. 
+ *      To do so, we need to iterate backwards and first non empty slot will be largest element 
+ *      (because keys correspond to values and iterating from backwards we will encounter max element sooner).
+ * - Worst case scenario, there won't be any element in the array and we would have to iterate over whole array.
+ * - So search would be linear O(n) where n is array's length.
+ * 
+ * @param {number[]} arr - The array representing a direct-address table.
+ * @returns {(number|null)} The maximum element in the array, or null if the array is empty
+ * or contains only null or undefined values.
 */
 
 function maxEl(arr) {
@@ -25,5 +35,9 @@ function maxEl(arr) {
         if (arr[i] !== null && arr[i] !== undefined) {
             return arr[i];
         }
-    };
+    }
+    return null;
 };
+
+const array = [2, 3, 4, 5, , , , ];
+console.log(maxEl(array));

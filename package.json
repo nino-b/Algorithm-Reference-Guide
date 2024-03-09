@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "docs": "jsdoc -c jsdoc.json",
+    "generate-docs": "jsdoc -c jsdoc.json",
     "open-docs": "start ./docs/index.html"
   },
   "devDependencies": {
