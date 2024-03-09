@@ -14,7 +14,7 @@ For each problem, I aim to:
 - Test the code with various inputs for correctness and efficiency.
 
 ## Usage of Solutions
-While these solutions are open for others to view, I encourage everyone to first attempt solving the problems independently to maximize the learning experience.
+These solutions are open for others to view.
 
 ## Disclaimer
 The solutions provided are my own and they are not official solutions from the book authors. This repository is for educational purposes only.
