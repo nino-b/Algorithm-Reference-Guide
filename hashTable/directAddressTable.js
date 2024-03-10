@@ -72,8 +72,9 @@ console.log(maxEl(array));
  * #Advantages of bit vector:
  * - Takes less space than regular array;
  * 
- * #Disadvantage:
+ * #Disadvantages:
  * - Can only be used with unique values;
+ * - Elements can't have satellite data.
  * 
  * #Example:
  * If we have a set of elements {1, 2, 3, 5}, we can generate a bit vector: [0, 1, 1, 1, 0, 1];
@@ -100,5 +101,130 @@ class BitVector {
 
 
 /** 
- * Suggest how to implement a direct-address table in which the keys of stored elements do not need to be distinct and the elements can have satellite data. All three dictionary operations (INSERT, DELETE, and SEARCH) should run in O(1) time. (Don’t forget that DELETE takes as an argument a pointer to an object to be deleted, not a key.)
+ * #Problem
+ * Suggest how to implement a direct-address table in which the keys of stored elements do not need to be distinct and the elements can have satellite data. 
+ * All three dictionary operations (INSERT, DELETE, and SEARCH) should run in O(1) time. 
+ * (Don’t forget that DELETE takes as an argument a pointer to an object to be deleted, not a key.)
+ * 
+ * #Solution, step by step guide:
+ * - 'keys of stored elements do not need to be distinct' - we might have same keys with different (or same) satellite data.
+ * - When two keys hash to the same index, it is called a collision.
+ * - We can use Hash Table to solve this problem. It offers ways to handle collisions and it is a form of Direct-Address Table (so dictionary operations run in constant time (O(1)) ).
+ * - One of the way to handle collisions is to group all elements with same hash as an array, or linked list.
+ * - 'DELETE takes as an argument a pointer to an object to be deleted, not a key' - elements are connected to each other via pointers (grouped as linked list).
 */
+
+class Node {
+    constructor(key, value) {
+        this.key = key;
+        this.value = value;
+        this.nextNode = null;
+    }
+}
+
+class HashTable {
+    constructor(length) {
+        this.length = length;
+        this.hashTable = new Array(this.length).fill(null);
+    }
+    insert(key, value) {
+        const node = new Node(key, value);
+        const hashIndex = this.hashGenerator(node.key);
+
+        if (!this.hashTable[hashIndex]) {
+            this.hashTable[hashIndex] = node;
+        } else {
+            let current = this.hashTable[hashIndex];
+            while (current) {
+                if (current.nextNode) {
+                    current = current.nextNode;
+                } else {
+                    current.nextNode = node;
+                    break;
+                }
+            }
+        }
+    }
+    search(key) {
+        const index = this.hashGenerator(key);
+        let current = this.hashTable[index];
+
+        if (!current) {
+            return null;
+        }
+        while (current) {
+            if (current.key === key) {
+                return current;
+            }
+            current = current.nextNode;
+        }
+        return null; // hash is the same but there is no element with that key
+    
+    }
+    delete(node) {
+        const index = this.hashGenerator(node.key);
+        let current = this.hashTable[index];
+
+        if (!current) {
+            throw new Error('Element you are trying to delete does not exist!');
+        }
+
+        if (current === node) {
+            this.hashTable[index] = node.nextNode;
+            return;
+        } 
+        while (current) {
+            if (current.nextNode === node) {
+                current.nextNode = node.nextNode;
+                return;
+            }
+            current = current.nextNode;
+        }
+        throw new Error('Element you are trying to delete does not exist!');
+        
+    }
+    
+    /**
+     * Generates hash index for a node.
+     * - Key is the element that we use to allocate or search node in the Hash Table.
+     *
+     * @param {*} key - key property of a node.
+     * @return {number} - hash index.
+     * @memberof HashTable
+     */
+    hashGenerator(key) {
+        let sum = 0;
+        let typePrefix;
+        if (typeof key === 'string') {
+            typePrefix = 'STR:';
+        } else if (typeof key === 'number') {
+            typePrefix = 'NUM:';
+        } else if (typeof key === 'object') {
+            typePrefix = 'OBJ:';
+            key = JSON.stringify(key);
+        } else if (typeof key === 'boolean') {
+            typePrefix = 'BOOL:';
+        } else {
+            typePrefix = 'OTHER'
+        }
+
+        const string = typePrefix + key.toString();
+
+        for (let i = 0; i < string.length; i++) {
+            sum += string.charCodeAt(i) * 3;
+        }
+        return sum % this.length;
+    } 
+    resize() {
+        const oldHashTable = this.hashTable;
+        this.length *= 2;
+        this.hashTable = new Array(this.length).fill(null);
+
+        oldHashTable.forEach(node => {
+            while(node) {
+                this.insert(node.key, node.value);
+                node = node.nextNode;
+            }
+        })
+    }
+}
