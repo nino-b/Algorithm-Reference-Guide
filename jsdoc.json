@@ -11,6 +11,16 @@
       "encoding": "utf8",
       "recurse": true,
       "markdown": true
-    }
+    },
+    "tags": {
+      "allowUnknownTags": true
+    },
+    "templates": {
+      "cleverLinks": false,
+      "monospaceLinks": false
+    },
+    "plugins": [
+      "plugins/markdown"
+    ]
   }
   
