@@ -37,11 +37,15 @@
  * - Worst case scenario, there won't be any element in the array and we would have to iterate over whole array.
  * - So search would be linear <b>O(n)</b> where n is array's length.
  * 
+ * @namespace problem01
+*/
+
+
+/**
  * @param {number[]} arr - The array representing a direct-address table.
  * @returns {(number|null)} The maximum element in the array, or null if the array is empty
  * or contains only null or undefined values.
-*/
-
+ */
 function maxEl(arr) {
     for (let i = arr.length - 1; i >= 0; i--) {
         if (arr[i] !== null && arr[i] !== undefined) {
@@ -51,8 +55,6 @@ function maxEl(arr) {
     return null;
 };
 
-const array = [2, 3, 4, 5, , , , ];
-console.log(maxEl(array));
 
 
 
@@ -78,6 +80,7 @@ console.log(maxEl(array));
  * 
  * #Example:
  * If we have a set of elements {1, 2, 3, 5}, we can generate a bit vector: [0, 1, 1, 1, 0, 1];
+ * @namespace problem02
 */
 
 class BitVector {
@@ -108,17 +111,39 @@ class BitVector {
  * 
  * #Solution, step by step guide:
  * - 'keys of stored elements do not need to be distinct' - we might have same keys with different (or same) satellite data.
- * - When two keys hash to the same index, it is called a collision.
- * - We can use Hash Table to solve this problem. It offers ways to handle collisions and it is a form of Direct-Address Table (so dictionary operations run in constant time (O(1)) ).
+ *      - Here emerges a problem: 
+ *      we might have two distinct elements with exact same keys and satellite data 
+ *      (like: element1 = {cat: 'tabby'} and element2 = {cat: 'tabby'}) and condition does not specify that we can replace 
+ *      one element with another if we encounter same elements during Direct-Address Table creation process.
+ *      - To distinguish two distinct elements with same keys and satellite data we can use unique identifiers.
+ * - Hash Tables are form of Direct-Address Table that can store elements with same key (when two keys hash to the same index, it is called a collision).
  * - One of the way to handle collisions is to group all elements with same hash as an array, or linked list.
- * - 'DELETE takes as an argument a pointer to an object to be deleted, not a key' - elements are connected to each other via pointers (grouped as linked list).
+ * - 'DELETE takes as an argument a pointer to an object to be deleted, not a key' - elements are connected to each other with pointers (so we use linked list).
+ * @namespace problem03
 */
 
+
+/**
+ * Creates Node - Hash Table element.
+ * Static property id creates unique IDs for each Node instance. Because id property is static, its value is global - every next instance gets incremented value and increments it by one. So every Node instance gets unique id.
+ *
+ * @class Node
+ */
 class Node {
+    
+    /**
+     *
+     *
+     * @static
+     * @property {number} id - creates unique IDs for each Node instance. Because id property is static, every next instance gets incremented value.
+     * @memberof Node
+     */
+    static id = 0;
     constructor(key, value) {
         this.key = key;
         this.value = value;
         this.nextNode = null;
+        this.id = Node.id++;
     }
 }
 
@@ -126,9 +151,13 @@ class HashTable {
     constructor(length) {
         this.length = length;
         this.hashTable = new Array(this.length).fill(null);
+        this.elementCount = 0;
     }
-    insert(key, value) {
-        const node = new Node(key, value);
+    insert(node) {
+        this.elementCount++;
+        if (this.elementCount >= this.length / 2) {
+            this.resize();
+        }
         const hashIndex = this.hashGenerator(node.key);
 
         if (!this.hashTable[hashIndex]) {
@@ -145,7 +174,7 @@ class HashTable {
             }
         }
     }
-    search(key) {
+    search(key, id) {
         const index = this.hashGenerator(key);
         let current = this.hashTable[index];
 
@@ -153,12 +182,12 @@ class HashTable {
             return null;
         }
         while (current) {
-            if (current.key === key) {
+            if (current.key === key && current.id === id) {
                 return current;
             }
             current = current.nextNode;
         }
-        return null; // hash is the same but there is no element with that key
+        return null; // hash does exist but there is no element with that key
     
     }
     delete(node) {
@@ -181,7 +210,6 @@ class HashTable {
             current = current.nextNode;
         }
         throw new Error('Element you are trying to delete does not exist!');
-        
     }
     
     /**
@@ -219,12 +247,15 @@ class HashTable {
         const oldHashTable = this.hashTable;
         this.length *= 2;
         this.hashTable = new Array(this.length).fill(null);
+        this.elementCount = 0;
 
         oldHashTable.forEach(node => {
             while(node) {
-                this.insert(node.key, node.value);
-                node = node.nextNode;
+                const nextNode = node.nextNode;
+                node.nextNode = null;
+                this.insert(node);
+                node = nextNode;
             }
-        })
+        });
     }
 }
