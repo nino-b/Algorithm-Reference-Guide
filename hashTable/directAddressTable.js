@@ -1,9 +1,5 @@
 
 /** 
- * Suppose that you want to implement a dictionary by using direct addressing on a huge array. That is, if the array size is m and the dictionary contains at most n elements at any one time, then m >> n. At the start, the array entries may contain garbage, and initializing the entire array is impractical because of its size. Describe a scheme for implementing a direct-address dictionary on a huge array. Each stored object should use O(1) space; the operations SEARCH, INSERT, and DELETE should take O(1) time each; and initializing the data structure should take O(1) time. (Hint: Use an additional array, treated somewhat like a stack, whose size is the number of keys actually stored in the dictionary, to help determine whether a given entry in the huge array is valid or not.) 
- */
-
-/** 
  * # Direct-Address Table
  * 
  * - Direct-Address Table is an array where value occupies the index (key) that is equal to value.
@@ -37,24 +33,21 @@
  * - Worst case scenario, there won't be any element in the array and we would have to iterate over whole array.
  * - So search would be linear <b>O(n)</b> where n is array's length.
  * 
- * @namespace problem01
 */
 
-
-/**
- * @param {number[]} arr - The array representing a direct-address table.
- * @returns {(number|null)} The maximum element in the array, or null if the array is empty
- * or contains only null or undefined values.
- */
 function maxEl(arr) {
     for (let i = arr.length - 1; i >= 0; i--) {
         if (arr[i] !== null && arr[i] !== undefined) {
-            return arr[i];
+            return i;
         }
     }
     return null;
 };
 
+const directAddressTable = [null, null, true, true, null, true, null];
+
+const maxElelemt = maxEl(directAddressTable);
+console.log('Maximum element: ', maxElelemt);
 
 
 
@@ -80,7 +73,6 @@ function maxEl(arr) {
  * 
  * #Example:
  * If we have a set of elements {1, 2, 3, 5}, we can generate a bit vector: [0, 1, 1, 1, 0, 1];
- * @namespace problem02
 */
 
 class BitVector {
@@ -98,6 +90,20 @@ class BitVector {
         this.vector[num] = 0;
     }
 }
+
+//const newBitVector = new BitVector(7);
+//newBitVector.insert(3);
+//newBitVector.insert(4);
+//newBitVector.insert(5);
+
+//console.log('Inserted 3, 4 and 5: ', newBitVector);
+
+//const searchedFor2 = newBitVector.search(2);
+//console.log('Searched for number 2: ', searchedFor2);
+
+//newBitVector.delete(4);
+
+//console.log('Deleted number 4: ', newBitVector);
 
 
 
@@ -119,25 +125,10 @@ class BitVector {
  * - Hash Tables are form of Direct-Address Table that can store elements with same key (when two keys hash to the same index, it is called a collision).
  * - One of the way to handle collisions is to group all elements with same hash as an array, or linked list.
  * - 'DELETE takes as an argument a pointer to an object to be deleted, not a key' - elements are connected to each other with pointers (so we use linked list).
- * @namespace problem03
+ * - So, we need to create a Hash Table that takes element with unique id as an argument and handles collisions with chaining elements as a linked list.
 */
 
-
-/**
- * Creates Node - Hash Table element.
- * Static property id creates unique IDs for each Node instance. Because id property is static, its value is global - every next instance gets incremented value and increments it by one. So every Node instance gets unique id.
- *
- * @class Node
- */
 class Node {
-    
-    /**
-     *
-     *
-     * @static
-     * @property {number} id - creates unique IDs for each Node instance. Because id property is static, every next instance gets incremented value.
-     * @memberof Node
-     */
     static id = 0;
     constructor(key, value) {
         this.key = key;
@@ -211,15 +202,6 @@ class HashTable {
         }
         throw new Error('Element you are trying to delete does not exist!');
     }
-    
-    /**
-     * Generates hash index for a node.
-     * - Key is the element that we use to allocate or search node in the Hash Table.
-     *
-     * @param {*} key - key property of a node.
-     * @return {number} - hash index.
-     * @memberof HashTable
-     */
     hashGenerator(key) {
         let sum = 0;
         let typePrefix;
@@ -259,3 +241,37 @@ class HashTable {
         });
     }
 }
+
+//const node1 = new Node('cat', 'siamese');
+//const node2 = new Node('cat', 'siamese');
+//const node3 = new Node('dog', 'black');
+//const node4 = new Node('rabbit', 'white');
+
+//const newHashTable = new HashTable(7);
+//console.log('Empty Hash Table: ', newHashTable);
+
+//newHashTable.insert(node1);
+//newHashTable.insert(node2);
+//newHashTable.insert(node3);
+
+//console.log('Populated Hash Table: ', newHashTable);
+
+//newHashTable.insert(node4);
+
+//console.log('Resized Hash Table: ', newHashTable);
+
+//const firstSiameseCat = newHashTable.search('cat', 1);
+
+//console.log('Searched first instance of "siamese cat": ', firstSiameseCat);
+
+//newHashTable.delete(node3);
+
+//console.log('Hash Table after I deleted node3: ', newHashTable);
+
+
+
+
+
+/** 
+ * Suppose that you want to implement a dictionary by using direct addressing on a huge array. That is, if the array size is m and the dictionary contains at most n elements at any one time, then m >> n. At the start, the array entries may contain garbage, and initializing the entire array is impractical because of its size. Describe a scheme for implementing a direct-address dictionary on a huge array. Each stored object should use O(1) space; the operations SEARCH, INSERT, and DELETE should take O(1) time each; and initializing the data structure should take O(1) time. (Hint: Use an additional array, treated somewhat like a stack, whose size is the number of keys actually stored in the dictionary, to help determine whether a given entry in the huge array is valid or not.) 
+ */
