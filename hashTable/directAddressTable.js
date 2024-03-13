@@ -25,7 +25,7 @@
  * Describe a procedure that finds the maximum element of S. 
  * What is the worst-case performance of your procedure?
  * 
- * # Solution, step by step guide:
+ * # My Approach:
  * - Array might not be fully populated and there might be empty slots.
  * - Look for largest non empty slot. 
  *      To do so, we need to iterate backwards and find first non empty slot  
@@ -44,10 +44,10 @@ function maxEl(arr) {
     return null;
 };
 
-const directAddressTable = [null, null, true, true, null, true, null];
+//const directAddressTable = [null, null, true, true, null, true, null];
 
-const maxElelemt = maxEl(directAddressTable);
-console.log('Maximum element: ', maxElelemt);
+//const maxElelemt = maxEl(directAddressTable);
+//console.log('Maximum element: ', maxElelemt);
 
 
 
@@ -57,7 +57,7 @@ console.log('Maximum element: ', maxElelemt);
  * #Problem:
  * A bit vector is simply an array of bits (each either 0 or 1). A bit vector of length m takes much less space than an array of m pointers. Describe how to use a bit vector to represent a dynamic set of distinct elements drawn from the set {0, 1, ..., m − 1} and with no satellite data. Dictionary operations should run in O(1) time.
  * 
- * # Solution, step by step guide:
+ * # My Approach:
  * - There is a set of numbers, so we can use Direct-Address Table (values will correspond indices).
  * - Bit vector - it is an arry where if element is present, respective value to corresponding index will be 1 (true) and if does not exist - 0 (false);
  * - To solve a problem:
@@ -115,7 +115,7 @@ class BitVector {
  * All three dictionary operations (INSERT, DELETE, and SEARCH) should run in O(1) time. 
  * (Don’t forget that DELETE takes as an argument a pointer to an object to be deleted, not a key.)
  * 
- * #Solution, step by step guide:
+ * # My Approach:
  * - 'keys of stored elements do not need to be distinct' - we might have same keys with different (or same) satellite data.
  *      - Here emerges a problem: 
  *      we might have two distinct elements with exact same keys and satellite data 
@@ -273,5 +273,74 @@ class HashTable {
 
 
 /** 
- * Suppose that you want to implement a dictionary by using direct addressing on a huge array. That is, if the array size is m and the dictionary contains at most n elements at any one time, then m >> n. At the start, the array entries may contain garbage, and initializing the entire array is impractical because of its size. Describe a scheme for implementing a direct-address dictionary on a huge array. Each stored object should use O(1) space; the operations SEARCH, INSERT, and DELETE should take O(1) time each; and initializing the data structure should take O(1) time. (Hint: Use an additional array, treated somewhat like a stack, whose size is the number of keys actually stored in the dictionary, to help determine whether a given entry in the huge array is valid or not.) 
+ * #Problem:
+ * Suppose that you want to implement a dictionary by using direct addressing on a huge array. That is, if the array size is m and the 
+ * dictionary contains at most n elements at any one time, then m >> n. At the start, the array entries may contain garbage, and initializing 
+ * the entire array is impractical because of its size. Describe a scheme for implementing a direct-address dictionary on a huge array. Each 
+ * stored object should use O(1) space; the operations SEARCH, INSERT, and DELETE should take O(1) time each; and initializing the data 
+ * structure should take O(1) time. (Hint: Use an additional array, treated somewhat like a stack, whose size is the number of keys actually 
+ * stored in the dictionary, to help determine whether a given entry in the huge array is valid or not.) 
+ * 
+ * # My Approach:
+ * - 'implement a dictionary by using direct addressing on a huge array': implement a direct address array that holds dictionary values.
+ * - 'array size is m and the dictionary contains at most n elements at any one time, then m >> n': implement an array with a length of m, 
+ * which is larger than actual number of entries in the array - n.
+ * - Because m > n, and we don't what is the difference between those two. E.g. m = 10 000 and n = 10, it will be waste of space and time to 
+ * create array with length of m and initialize values (like null) for the whole array if we won't use initialized space.
+ * - To avoid that problem, initialize a Direct-Address array with length of m but won't initialize its values.
+ * - Auxiliary array will be length of n and will hold indices (from main array) that are actually occupied. This is important, because if we 
+ * insert value 'undefined' at index (example location) 346 in the main array and then directly try to retrieve data from index 346, 
+ * we might not distingush actually inserted 'undefined' from the result unsefined if the value was absent.
  */
+
+class DirectAddressDictionary  {
+    constructor(mLength, nLength) {
+        this.mainArr = new Array(mLength);
+        this.auxiliaryArr = new Array(nLength);
+        this.elementCount = 0;
+    }
+    insert(obj) {
+        const key = Object.keys(obj)[0];
+        
+        const hashIndex = this.hashGenerator(key);
+
+        if (!this.mainArr[hashIndex]) {
+            this.mainArr[hashIndex] = [obj];
+        } else {
+            let index = 0;
+            while (this.mainArr[hashIndex][index]) {
+                if (this.mainArr[hashIndex][index + 1] !== obj) {
+                    index++;
+                } else {
+                    this.mainArr[hashIndex][index + 1] = obj;
+                    this.auxiliaryArr.push(key);
+                    return;
+                }
+            }
+        }
+    }
+
+    hashGenerator(key) {
+        let sum = 0;
+        let typePrefix;
+        if (typeof key === 'string') {
+            typePrefix = 'STR:';
+        } else if (typeof key === 'number') {
+            typePrefix = 'NUM:';
+        } else if (typeof key === 'object') {
+            typePrefix = 'OBJ:';
+            key = JSON.stringify(key);
+        } else if (typeof key === 'boolean') {
+            typePrefix = 'BOOL:';
+        } else {
+            typePrefix = 'OTHER'
+        }
+
+        const string = typePrefix + key.toString();
+
+        for (let i = 0; i < string.length; i++) {
+            sum += string.charCodeAt(i) * 3;
+        }
+        return sum % this.mLength;
+    } 
+}
