@@ -111,7 +111,8 @@ class BitVector {
 
 /** 
  * #Problem
- * Suggest how to implement a direct-address table in which the keys of stored elements do not need to be distinct and the elements can have satellite data. 
+ * Suggest how to implement a direct-address table in which the keys of stored elements do not need to be distinct and 
+ * the elements can have satellite data. 
  * All three dictionary operations (INSERT, DELETE, and SEARCH) should run in O(1) time. 
  * (Don’t forget that DELETE takes as an argument a pointer to an object to be deleted, not a key.)
  * 
@@ -288,59 +289,32 @@ class HashTable {
  * - Because m > n, and we don't what is the difference between those two. E.g. m = 10 000 and n = 10, it will be waste of space and time to 
  * create array with length of m and initialize values (like null) for the whole array if we won't use initialized space.
  * - To avoid that problem, initialize a Direct-Address array with length of m but won't initialize its values.
- * - Auxiliary array will be length of n and will hold indices (from main array) that are actually occupied. This is important, because if we 
+ * - I will use Set as key holder and will hold indices (from main array) that are actually occupied. This is important, because if we 
  * insert value 'undefined' at index (example location) 346 in the main array and then directly try to retrieve data from index 346, 
  * we might not distingush actually inserted 'undefined' from the result unsefined if the value was absent.
  */
 
-class DirectAddressDictionary  {
-    constructor(mLength, nLength) {
+class DirectAddressDictionary {
+    constructor(mLength) {
         this.mainArr = new Array(mLength);
-        this.auxiliaryArr = new Array(nLength);
-        this.elementCount = 0;
+        this.keySet = new Set();
     }
-    insert(obj) {
-        const key = Object.keys(obj)[0];
-        
-        const hashIndex = this.hashGenerator(key);
-
-        if (!this.mainArr[hashIndex]) {
-            this.mainArr[hashIndex] = [obj];
-        } else {
-            let index = 0;
-            while (this.mainArr[hashIndex][index]) {
-                if (this.mainArr[hashIndex][index + 1] !== obj) {
-                    index++;
-                } else {
-                    this.mainArr[hashIndex][index + 1] = obj;
-                    this.auxiliaryArr.push(key);
-                    return;
-                }
-            }
+    insert(key, value) {
+        if (!this.keySet.has(key)) {
+            this.mainArr[key] = value;
+            this.keySet.add(key);
         }
     }
-
-    hashGenerator(key) {
-        let sum = 0;
-        let typePrefix;
-        if (typeof key === 'string') {
-            typePrefix = 'STR:';
-        } else if (typeof key === 'number') {
-            typePrefix = 'NUM:';
-        } else if (typeof key === 'object') {
-            typePrefix = 'OBJ:';
-            key = JSON.stringify(key);
-        } else if (typeof key === 'boolean') {
-            typePrefix = 'BOOL:';
-        } else {
-            typePrefix = 'OTHER'
+    search(key) {
+        if (this.keySet.has(key)) {
+            return this.mainArr[key];
         }
-
-        const string = typePrefix + key.toString();
-
-        for (let i = 0; i < string.length; i++) {
-            sum += string.charCodeAt(i) * 3;
+        return null;
+    }
+    delete(key) {
+        if (this.keySet.has(key)) {
+            this.mainArr[key] = undefined;
+            this.keySet.delete(key);
         }
-        return sum % this.mLength;
-    } 
+    }
 }
