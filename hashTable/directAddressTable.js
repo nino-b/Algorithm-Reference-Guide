@@ -14,7 +14,8 @@
  * - Time compexity is constant (O(1)), so dictionary operations (insert, search, delete) run in constant time.
  * 
  * ##Disadvantage:
- * - Not space efficient. If we have sparse array (holes in array), space is wasted.
+ * - Not space efficient. A large table is created that has slots for each possible keys. And if actual keys are much less than 
+ * slots for possible keys, than space is wasted.
  * 
  * @namespace DirectAddressTable
  */
