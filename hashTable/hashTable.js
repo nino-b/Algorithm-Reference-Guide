@@ -105,7 +105,7 @@ class OrderHashTable {
         } else {
             let current = this.hashTable[index];
             let prevNode = null;
-            while (current !== null && current.value > node.value) {
+            while (current !== null && current.key > node.key) {
                 prevNode = current;
                 current = current.nextNode;
             }
