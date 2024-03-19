@@ -95,6 +95,8 @@ class OrderHashTable {
     constructor(length) {
         this.length = length;
         this.hashTable = new Array(this.length).fill(null);
+        this.elementCount = 0;
+        this.resetThreshold = this.length / 2;
     }
     insert(key, value) {
         const index = this.hash(key);
@@ -105,7 +107,9 @@ class OrderHashTable {
         } else {
             let current = this.hashTable[index];
             let prevNode = null;
-            while (current !== null && current.key > node.key) {
+            while (current !== null && current.key > node.key) { 
+                // this works if typeof key is either string or number. 
+                // if it has other type, different key comparison methods should be implemented
                 prevNode = current;
                 current = current.nextNode;
             }
@@ -117,12 +121,49 @@ class OrderHashTable {
                 prevNode.nextNode = node;
             }
         }
+        this.elementCount++;
+        if (this.elementCount >= this.resetThreshold) {
+            this.#reset();
+        }
     }
     search(key) {
         const index = this.hash(key);
         let current = this.hashTable[index];
 
-        while (current) {}
+        if (!current) throw new Error("Element you are looking for does not exist!");
+
+        while (current) {
+            if (current.key === key) {
+                return current;
+            } else if (current.key < key) {
+                throw new Error("Element you are looking for does not exist!");
+            }
+            current = current.nextNode;
+        }
+    }
+    delete(key, value) {
+        const index = this.hash(key);
+        let current = this.hashTable[index];
+        let prevNode = null;
+        
+        if (!current) throw new Error("Element you are trying to delete does not exist!");
+
+        if (current.key === key && current.value === value) {
+            this.hashTable[index] = current.nextNode;
+            return;
+        } else {
+            while(current) {
+                if (current.key < key) {
+                    throw new Error("Element you are trying to delete does not exist!");
+                } else if (current.key === key && current.value === value) {
+                    prevNode.nextNode = current.nextNode;
+                    return;
+                }
+                prevNode = current;
+                current = current.nextNode;
+            }
+            throw new Error("Element you are trying to delete does not exist!");
+        }
     }
     hash(key) {
         let typeInitial = null;
@@ -146,15 +187,35 @@ class OrderHashTable {
         }
         return sum % this.length;
     }
+    #reset(){
+        this.length *= 2;
+        this.elementCount = 0;
+        const oldTable = this.hashTable;
+        this.hashTable = new Array(this.length).fill(null);
+        this.resetThreshold = this.length / 2;
+
+        for (const el of oldTable) {
+            let current = el;
+            while (current !== null) {
+                this.insert(current.key, current.value);
+                current = current.nextNode;
+            }
+        }
+    }
 }
+/* 
 const orderedTable = new OrderHashTable(10);
 
 orderedTable.insert(32, 'Bob');
 orderedTable.insert(32, 'Alice');
 orderedTable.insert(32, 'Rebecca');
+orderedTable.insert(34, 'Lynda');
 
-console.log(orderedTable.hashTable);
-
+console.log('Hash Table: ', orderedTable.hashTable);
+console.log('Searched element: ', orderedTable.search(34));
+orderedTable.delete(32, 'Alice')
+console.log('Hash Table after Deleting an element: ', orderedTable.hashTable);
+ */
 /** 
  * # Problem:
  * Suggest how to allocate and deallocate storage for elements within the hash table itself by creating a "free list": a linked list of all the 
@@ -182,6 +243,7 @@ class FreeListHashTable {
         this.hashTable = new Array(this.length).fill(null);
         this.freeNodeList = null;
         this.elementCount = 0;
+        this.resetThreshold = this.length / 2;
     }
     insert(key, value) {
         let node;
@@ -192,7 +254,7 @@ class FreeListHashTable {
 
             this.freeNodeList = this.freeNodeList.nextNode;
         } else {
-            node = new Node(key, value)
+            node = new FreeListNode(key, value)
         }
 
         const index = this.hash(key);
@@ -210,18 +272,18 @@ class FreeListHashTable {
             }
         }
         this.elementCount++;
-        this.reset();
+        if (this.elementCount >= this.resetThreshold) {
+            this.reset()
+        }
     }
     search(key) {
         const index = this.hash(key);
         let current = this.hashTable[index];
 
-        if (!current) return null;
-
-        if (current.key === key) {
-            return current;
-        } else {
-            while (current) {
+        if (!current) {
+            return null;
+        }  else {
+            while (current !== null) {
                 if (current.key === key) {
                     return current;
                 } else {
@@ -256,9 +318,10 @@ class FreeListHashTable {
                         current.nextNode = null;
                     }
                     this.#addElToFreeNodeList(toDelete);
-                    break;
+                    return;
                 } else {
                     current = current.nextNode;
+                    return;
                 }
             }
             throw new Error("Element you are trying delete that does not exist!");
@@ -287,20 +350,18 @@ class FreeListHashTable {
         return sum % this.length;
     }
     reset() {
-        if (this.elementCount >= this.length / 2) {
-            const oldTable = this.hashTable;
-            this.hashTable = new Array(this.length * 2).fill(null);
-            this.length *= 2;
-    
-            for (const el of oldTable) {
-                let current = el;
-                while (current !== null) {
-                    this.insert(current.key, current.value);
-                    current = current.nextNode;
-                }
+        const oldTable = this.hashTable;
+        this.hashTable = new Array(this.length * 2).fill(null);
+        this.length *= 2;
+        this.elementCount = 0;
+        this.resetThreshold = this.length / 2;
+
+        for (const el of oldTable) {
+            let current = el;
+            while (current !== null) {
+                this.insert(current.key, current.value);
+                current = current.nextNode;
             }
-        } else {
-            return;
         }
     }
     #addElToFreeNodeList(el) {
