@@ -14,17 +14,31 @@
 */
 
 /** 
+ * Represents a node in the linked list that is used for chaining in Hash Tables.
+ * This Node class will be used in all subsequent exercises.
+*/
+class Node {
+    
+    /**
+     * Creates an instance of Node.
+     * Default values are null because those parameters are not mandatory in all exercises.
+     * @param {*} key
+     * @param {*} [value=null] 
+     * @param {*} [nextNode=null]
+     * @memberof Node
+     */
+    constructor(key, value = null, nextNode = null) {
+        this.key = key;
+        this.value = value;
+        this.nextNode = nextNode;
+    }
+}
+
+/** 
  * Consider a hash table with 9 slots and the hash function h(k) = k mod 9. Demonstrate what happens upon inserting the keys 
  * 5, 28, 19, 15, 20, 33, 12, 17, 10 with collisions resolved by chaining.
 */
 
-
-class Node {
-    constructor(key) {
-        this.key = key;
-        this.nextNode = null;
-    }
-}
 class HashTable {
     constructor() {
         this.hashTable = new Array(9);
@@ -56,8 +70,8 @@ const table = new HashTable();
 
 function test (arr) {
     arr.forEach(el => {
-        const newNode01 = new Node(el);
-        table.insert(newNode01);
+        const newNode = new Node(el);
+        table.insert(newNode);
     });
 }
 
@@ -83,14 +97,6 @@ console.log(table.hashTable); */
  *      - O(n) linear search. Is costly because we need to check each item until we find correct position.
 */
 
-class ChainNode {
-    constructor (key, value) {
-        this.key = key;
-        this.value = value;
-        this.nextNode = null;
-    }
-}
-
 class OrderHashTable {
     constructor(length) {
         this.length = length;
@@ -100,7 +106,7 @@ class OrderHashTable {
     }
     insert(key, value) {
         const index = this.hash(key);
-        const node = new ChainNode(key, value);
+        const node = new Node(key, value);
 
         if (!this.hashTable[index]) {
             this.hashTable[index] = node;
@@ -150,6 +156,7 @@ class OrderHashTable {
 
         if (current.key === key && current.value === value) {
             this.hashTable[index] = current.nextNode;
+            this.elementCount--;
             return;
         } else {
             while(current) {
@@ -157,6 +164,7 @@ class OrderHashTable {
                     throw new Error("Element you are trying to delete does not exist!");
                 } else if (current.key === key && current.value === value) {
                     prevNode.nextNode = current.nextNode;
+                    this.elementCount--;
                     return;
                 }
                 prevNode = current;
@@ -229,13 +237,6 @@ console.log('Hash Table after Deleting an element: ', orderedTable.hashTable);
  * will create new Node instance.
 */
 
-class FreeListNode {
-    constructor(key, value, nextNode = null) {
-        this.key = key;
-        this.value = value;
-        this.nextNode = nextNode;
-    }
-}
 
 class FreeListHashTable {
     constructor(length) {
@@ -254,7 +255,7 @@ class FreeListHashTable {
 
             this.freeNodeList = this.freeNodeList.nextNode;
         } else {
-            node = new FreeListNode(key, value)
+            node = new Node(key, value)
         }
 
         const index = this.hash(key);
@@ -298,7 +299,7 @@ class FreeListHashTable {
         let current = this.hashTable[index];
 
         if (!current) {
-            throw new Error("Element you are trying delete that does not exist!");
+            throw new Error("Element you are trying delete does not exist!");
         }
 
         if (current.key === key) {
@@ -307,6 +308,7 @@ class FreeListHashTable {
             } else {
                 this.hashTable[index] = null;
             }
+            this.elementCount--;
             this.#addElToFreeNodeList(current);
         } else {
             while (current) {
@@ -317,6 +319,7 @@ class FreeListHashTable {
                     } else {
                         current.nextNode = null;
                     }
+                    this.elementCount--;
                     this.#addElToFreeNodeList(toDelete);
                     return;
                 } else {
@@ -324,7 +327,7 @@ class FreeListHashTable {
                     return;
                 }
             }
-            throw new Error("Element you are trying delete that does not exist!");
+            throw new Error("Element you are trying delete does not exist!");
         }
     }
     hash(key) {
@@ -380,16 +383,291 @@ class FreeListHashTable {
  * # Problem:
  * You need to store a set of n keys in a hash table of size m. Show that if the keys are drawn from a universe U with |U| > (n − 1)m, then U 
  * has a subset of size n consisting of keys that all hash to the same slot, so that the worst-case searching time for hashing with chaining is 
- * Θ(n).
+ * Θ(n). 
  * 
  * # My Approach:
+ * - Because universe is larger than Hash Table, it is more likely that collisions will happen. 
+ * - Chaining is one of the mehods of resolving collisions.
 */
+
+class DenseSubsetHashTable {
+    constructor (length) {
+        this.length = length;
+        this.hashTable = new Array(this.length).fill(null);
+        this.elementCount = 0;
+        this.resetThreshold = this.length / 2;
+    }
+    insert(key, value) {
+        const index = this.#hash(key);
+        const node = new Node(key, value);
+        let current = this.hashTable[index];
+
+        if (!current) {
+            this.hashTable[index] = node;
+        } else {
+            while (current !== null) {
+                if (current.nextNode === null) {
+                    current.nextNode = node;
+                    return;
+                }
+                current = current.nextNode;
+            }
+        }
+        this.elementCount++;
+        if (this.elementCount >= this.resetThreshold) {
+            this.#reset();
+        }
+    }
+    search(key) {
+        const index = this.#hash(key);
+        let current = this.hashTable[index];
+
+        if (!current) {
+            return null;
+        } else {
+            while (current !== null) {
+                if (current.key === key) {
+                    return current;
+                }
+                current = current.nextNode;
+            }
+            return null;
+        }
+    }
+    delete(key, value) {
+        const index = this.#hash(key);
+        let current = this.hashTable[index];
+        
+        if (!current) {
+            throw new Error("Element you are trying delete does not exist!");
+        } else {
+            if (current.key === key && current.value === value) {
+                this.hashTable[index] = current.nextNode;
+                this.elementCount--;
+                return;
+            }
+            let prevNode = null;
+            while (current !== null) {
+                if (current.key === key && current.value === value) {
+                    prevNode.nextNode = current.nextNode;
+                    this.elementCount--;
+                    return;
+                }
+                prevNode = current;
+                current = current.nextNode;
+            }
+            throw new Error("Element you are trying delete does not exist!");
+        }
+    }
+    #hash(key) {
+        let typeInitial = null;
+        if (typeof key === 'string') {
+            typeInitial = 'STR:';
+        } else if (typeof key === 'number') {
+            typeInitial = 'NUM:';
+        } else if (typeof key === 'object') {
+            typeInitial = 'OBJ:';
+        } else if (typeof key === 'boolean') {
+            typeInitial = 'BOOL:';
+        } else {
+            typeInitial = 'OTHER';
+        }
+
+        let string = typeInitial + key.toString();
+
+        let sum = 0;
+        for (let i = 0; i < string.length; i++) {
+            sum += string.charCodeAt(i);
+        }
+        return sum % this.length;
+    }
+    #reset(){
+        this.length *= 2;
+        this.elementCount = 0;
+        const oldTable = this.hashTable;
+        this.hashTable = new Array(this.length).fill(null);
+        this.resetThreshold = this.length / 2;
+
+        for (const el of oldTable) {
+            let current = el;
+            while (current !== null) {
+                this.insert(current.key, current.value);
+                current = current.nextNode;
+            }
+        }
+    }
+}
+
+/* 
+const denseSubsetHashTable = new DenseSubsetHashTable(3);
+denseSubsetHashTable.insert('key', 'data1');
+denseSubsetHashTable.insert('key1', 'data2');
+denseSubsetHashTable.insert('key', 'data3');
+denseSubsetHashTable.insert('key', 'data4');
+denseSubsetHashTable.insert('key', 'data5');
+denseSubsetHashTable.insert('key1', 'data6');
+
+console.log('Hash Table: ', denseSubsetHashTable.hashTable);
+console.log('Search "key": ', denseSubsetHashTable.search('key'));
+denseSubsetHashTable.delete('key', 'data1')
+console.log('Hash Table after Deleting "key", "data1": ', denseSubsetHashTable.hashTable);
+ */
+
 
 /** 
  * # Problem:
  * You have stored n keys in a hash table of size m, with collisions resolved by chaining, and you know the length of each chain, including the 
  * length L of the longest chain. Describe a procedure that selects a key uniformly at random from among the keys in the hash table and returns 
  * it in expected time O(L · (1 + 1/α)).
- * 
- * # My Approach:
 */
+
+class RandomKeyHashTable {
+    #elementCount = 0;
+    #resetThreshold = this.length / 2;
+    #longestChain = 0;
+    #keyCount = 0;
+    constructor (length) {
+        this.length = length;
+        this.hashTable = new Array(this.length).fill(null);
+    }
+    insert(key, value) {
+        const index = this.#hash(key);
+        const node = new Node(key, value);
+        let current = this.hashTable[index];
+
+        if (!current) {
+            this.hashTable[index] = node;
+        } else {
+            while (current !== null) {
+                if (current.nextNode === null) {
+                    current.nextNode = node;
+                    return;
+                }
+                current = current.nextNode;
+            }
+        }
+        this.#elementCount++;
+        this.#keyCount++;
+        if (this.#elementCount >= this.#resetThreshold) {
+            this.#reset();
+        }
+    }
+    search(key) {
+        const index = this.#hash(key);
+        let current = this.hashTable[index];
+
+        if (!current) {
+            return null;
+        } else {
+            while (current !== null) {
+                if (current.key === key) {
+                    return current;
+                }
+                current = current.nextNode;
+            }
+            return null;
+        }
+    }
+    delete(key, value) {
+        const index = this.#hash(key);
+        let current = this.hashTable[index];
+        
+        if (!current) {
+            throw new Error("Element you are trying delete does not exist!");
+        } else {
+            if (current.key === key && current.value === value) {
+                this.hashTable[index] = current.nextNode;
+                this.#keyCount--;
+                this.#elementCount--;
+                return;
+            }
+            let prevNode = null;
+            while (current !== null) {
+                if (current.key === key && current.value === value) {
+                    prevNode.nextNode = current.nextNode;
+                    this.#keyCount--;
+                    this.#elementCount--;
+                    return;
+                }
+                prevNode = current;
+                current = current.nextNode;
+            }
+            throw new Error("Element you are trying delete does not exist!");
+        }
+    }
+    #hash(key) {
+        let typeInitial = null;
+        if (typeof key === 'string') {
+            typeInitial = 'STR:';
+        } else if (typeof key === 'number') {
+            typeInitial = 'NUM:';
+        } else if (typeof key === 'object') {
+            typeInitial = 'OBJ:';
+        } else if (typeof key === 'boolean') {
+            typeInitial = 'BOOL:';
+        } else {
+            typeInitial = 'OTHER';
+        }
+
+        let string = typeInitial + key.toString();
+
+        let sum = 0;
+        for (let i = 0; i < string.length; i++) {
+            sum += string.charCodeAt(i);
+        }
+        return sum % this.length;
+    }
+    #reset(){
+        this.length *= 2;
+        this.#elementCount = 0;
+        this.#keyCount = 0;
+        const oldTable = this.hashTable;
+        this.hashTable = new Array(this.length).fill(null);
+        this.#resetThreshold = this.length / 2;
+
+
+        for (const el of oldTable) {
+            let current = el;
+            while (current !== null) {
+                this.insert(current.key, current.value);
+                current = current.nextNode;
+            }
+        }
+    }
+    selectKeyUniformly() {
+        if (this.#keyCount === 0) {
+            throw new Error('The hash table is empty.');
+        }
+        let attempt = 0;
+
+        while (attempt <= this.length) {
+            const hashIndex = Math.floor(Math.random() * this.length);
+            let current = this.hashTable[hashIndex];
+
+            if (current !== null) {
+                const chainLength = this.#getChainLength(current);
+                const randomIndex = Math.floor(Math.random() * chainLength);
+
+                for (let i = 0; i < randomIndex; i++) {
+                    current = current.nextNode;
+                }
+                return current.key;
+            }
+            attempt++;
+        }
+        throw new Error('Unable to select key.')
+    }
+    #getChainLength(node){
+        let current = node;
+        let length = 0;
+
+        while (current !== null) {
+            length++;
+            current = current.nextNode;
+        }
+        if (length > this.#longestChain) {
+            this.#longestChain = length;
+        }
+        return length;
+    }
+}
