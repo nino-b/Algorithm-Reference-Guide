@@ -5,7 +5,8 @@
  * 
  * # My Approach:
  * 1. Compute hash value for the key.
- * 2. Linearly go through linked list and compare Hash Values instead of long keys. This will reduce need for expensive string comparisons, 
+ * 2. Linearly go through linked list and compare Hash Values instead of long keys. 
+ * This will reduce need for expensive string comparisons, 
  * especially if each element has unique Hash Value.
 */
 
