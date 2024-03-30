@@ -18,7 +18,7 @@ function hash (string, p) {
 
     for (let i = 0; i < string.length; i++) {
         console.log(string.charCodeAt(i));
-        hash = (hash * Math.pow(2, p) + string.charCodeAt(i)) % (Math.pow(2, p) - 1);
+        hash = (hash + string.charCodeAt(i)) % (Math.pow(2, p) - 1);
     }
     return hash;
 }
