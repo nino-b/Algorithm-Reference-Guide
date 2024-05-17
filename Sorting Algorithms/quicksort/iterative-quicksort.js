@@ -41,7 +41,9 @@ function iterativeQuickSort(arr) {
        * 2. if 'start === end' this means that first and last indices are the same.
        * thus there is only one element in the segment
        * and one element segment is already sorted.
-       * 3. if 'start > end' this means that there was an error during partitioning or sorting
+       * 3. if 'start > end' this means that:
+       * - there is an empty array (start = 0, end = -1);
+       * - there was an error during partitioning or sorting
        * and some elements ended up in reversed order
        * in such cases (2 and 3) code will stop executing what is left in the current
        * iteration to be executed and will move on the next iteration
