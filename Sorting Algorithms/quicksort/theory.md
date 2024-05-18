@@ -19,7 +19,6 @@ function quickSort(array, low, high) {
     quickSort(array, low, partitionIndex - 1)
     quickSort(array, partitionIndex + 1, high)
   }
-  return array
 }
 
 function partition(array, low, high) {
@@ -88,20 +87,20 @@ function quickSort(arr, start = 0, end = arr.length - 1) {
 // Function to partition the array around a pivot element
 function partition(arr, start, end) {
   const pivot = arr[end]; // Choose the last element as the pivot
-  let i = start; // Pointer where smaller elements than a pivot should go.
+  let i = start - 1; // Pointer where smaller elements than a pivot should go.
   // In the end it end it will be returned and used in the 'quickSort' function as Partition index
   
   // Reorder elements in the array such that elements less than the pivot are on the left,
   // and elements greater than the pivot are on the right
   for (let j = start; j < end; j++) {
     if (arr[j] < pivot) { // If current element is smaller than the pivot
-      [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap the pivot with the element at the index i.
       i++; // Move the smaller elemen index forward
+      [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap the pivot with the element at the index i.
     }
   }
   // Place the pivot element after the last smaller element
-  [arr[i], arr[end]] = [arr[end], arr[i]];
-  return i; // Return the index of the pivot fot the 'quickSort' function
+  [arr[i + 1], arr[end]] = [arr[end], arr[i + 1]];
+  return i + 1; // Return the index of the pivot fot the 'quickSort' function
 }
 ```
 

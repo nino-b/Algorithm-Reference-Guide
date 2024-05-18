@@ -1,61 +1,74 @@
-/** 
- * QuickSort
-*/
-
 /** */
 
 /** 
- * Perform Quicksort on the array
- * @param {number[]} arr - The entire array to be sorted.
- * @param {number} [start = 0] - Marks starting index of the array segment that will be sorted.
- *                               Marking first and last indices allows 'quicksort' to work with segment of original array.
- * @param {number} [end = arr.length - 1] - Last index of the array segment to be sorted.
- * @returns {void} Returning sorted array is not necessary because it modifies the array in place 
- *                 (JS arrays are Reference Type, so returning a value is not necessary).
+ * Randomized version of the QuickSort.
+ * 
+ * It chooses random pivot for partitioning the array, 
+ * which reduces chance of repeatedly getting smallest
+ * or largest elements as a pivot.
 */
-function quicksort(arr, start = 0, end = arr.length - 1) {
+
+
+function quickSort(arr, start = 0, end = arr.length - 1) {
   /** 
-   * Check whether array has at least two elements.
-   * If 'start' index is greater than 'end' index, 
-   * the array is empty (start = 0, end = 0 - 1).
-   * If 'start' index is equal to 'end' index,
-   * the array has only one item, so it is sorted
+   * Make sure that there are at least two elements in a segment.
+   * 'start > end' - empty segment ('start' = 0, 'end' = -1 
+   * ('end = length - 1 = 0 - 1 = -1'))
+   * 'start = end' - one element in a segment.
   */
   if (start >= end) return;
 
   /** 
-   * Compute pivot index, which will divide array segment into two parts
-   * and 'partition' will also reorganize the array:
-   * elements that have value less than a pivot, go left side of it,
-   * greater elements go to the right side of it
+   * Compute pivot index.
   */
-  const pivotIndex = partition(arr, start, end);
+ const pivotIndex = randomizedPartition(arr, start, end);
 
+ /** 
+  * Recursively call 'quickSort' to sort the whole array,
+  * because each call sorts only the pivot element.
+  * This is why we omit pivot element from each recursive call.
+ */
+  quickSort(arr, start, pivotIndex - 1);
+  quickSort(arr, pivotIndex + 1, end);
   /** 
-   * Recursively call quicksort for each side of the pivot.
-   * Pivot itself is considered sorted, so 
-   * it won't be part of any segment to be sorted.
+   * Returning sorted array is not needed because 
+   * qiockSort sorts elements in-place and
+   * JS arrays are Reference Type, so changes are reflected in the original array.
   */
-  quicksort(arr, start, pivotIndex - 1);
-  quicksort(arr, pivotIndex + 1, end);
 }
 
-/** 
- * Sort the pivot element to its correct place, 
- * sort less than pivot elements to its left,
- * sort greater than pivot elements to its right.
- * 
- * @param {number[]} arr -The entire array to be sorted.
- * @param {number} start - The first index of an array segment to be sorted.
- * @param {number} end - The last index of an array segment to be sorted.
- * @returns {number} - Returns the index of the pivot element.
- *                     This pivot index is considered sorted,
- *                     so in the next recursive call of the 'quicksort;
- *                     it will be omitted.
- * 
- * Because arrays in JS are Reference Type, 
- * reorganizing the array is reflected automatically in the original array.
-*/
+function randomizedPartition(arr, start, end) {
+  /** 
+   * Compute random index for pivot.
+  */
+  const pivotIndex = randomInBetween(start, end);
+  /** 
+   * Swap the randomly chosen pivot with the last element 
+   * (standard pivot position).
+  */
+ [arr[pivotIndex], arr[end]] = [arr[end], arr[pivotIndex]];
+
+ /** 
+  * Call tha 'partition' and return the value - 
+  * index of a sorted pivot element.
+ */
+  return partition(arr, start, end);
+}
+
+function randomInBetween(min, max) {
+  /** 
+   * Calculate random index between first and last indices.
+   * 
+   * 'Math.random()' - generates random number between 'min' and 'max'
+   * '+1' - ensures that 'max' is also included.
+   * 
+   * 'Math.random() * (max - min + 1)' generates random number between '0' and 'max'.
+   * But because 'min' might not be '0', we add 'min' to the result,
+   * so the result will be between 'min' and 'max'.
+  */
+ return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 function partition(arr, start, end) {
   /** 
    * Choose the last element as a pivot.

@@ -72,55 +72,67 @@ function iterativeQuickSort(arr) {
 
 function partition(arr, start, end) {
   /** 
-   * Choose pivot element
+   * Choose the last element as a pivot.
+   * There are other strategies to choose the pivot element, like:
+   * choosing the first, middle or last element;
+   * choosing the median of three elements,
+   * randomly choosing.
   */
-  const pivot = arr[end];
-  /** 
-   * Choose index where will go the elements smaller than a pivot
-  */
-  let i = start;
+  let pivot = arr[end];
 
   /** 
-   * Iterate over a segment of an array and reorder elements:
-   * elements smaller than a pivot go to the left of the pivot
-   * elements greater than a pivot go to the right of the pivot
+   * 'i' is an index which points to the place 
+   * where elements less than a pivot go 
+   * ('i' also can point to the place where elements greater than a pivot can go,
+   * to do so, sorting condition needs to be reversed ('if (start > pivot)').
   */
-  for (let j = start; j < end; j++) {
+  let i = start - 1;
+
+  /** 
+   * Iterate over the whole segment to sort the elements.
+  */
+ for (let j = start; j < end; j++) {
+  /** 
+   * Check whether the element is less than a pivot
+  */
+  if (start < pivot) {
     /** 
-     * compare current element to the pivot.
-     * If the current element is less than a pivot, 
-     * swap places with the current element and 'i'
+     * Increment the index.
     */
-    if (arr[j] < pivot) {
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-      /** 
-       * Increment the index to indicate where next smaller element will be placed
-       * or in the end, where the pivot will be placed.
-       * because 'i' is always one step ahead and it shows where the next element should be
-      */
-      i++;
-    }
+    i++;
+    /** 
+     * If the element is less than a pivot, exchange places with the element at the index 'i' 
+     * to place the element at the index 'i'.
+    */
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+ }
   /** 
-   * Swap places between 'i' and pivot element
-   * this way pivot element will be right after all elements smaller than it
-   * and right before greater elements
+   * Add '1' to 'i'  and swap its places with the pivot.
+   * Attention: code doesn't increment 'i', rather it adds '1' to it.
+   * This is important for semantical reason:
+   * The goal of the existence of 'i' is to point to the location
+   * where element less than a pivot is located.
+   * So, because pivot is not less than itself, code doesn't increment 'i'.
+   * This way 'i' always points to the place, where 
+   * element less than a pivot is located.
+   * 
+   * -- After incrementing and before swapping, 
+   * 'i' points to the element that is greater than a pivot,
+   * while pivot is still located at the last place.
+   * so by swapping them, element, greater than a pivot gets placed at the last index,
+   * and pivot gets placed between elements greater and less than a pivot.
+   * Thus 'i' is the correct (sorted) place for the pivot.
+   * 
   */
-  [arr[i], arr[end]] = [arr[end], arr[i]];
-  /** 
-   * now 'i' points to the current index of the pivot element.
-   * Because array was sorted in-place, and the segment was just a part of the original
-   * array, just determined with 'start' and 'end' indices,
-   * and partition modified the original array,
-   * now 'i' points to the actually sorted pivot element, at the original array.
-   * and after this, sorting the current pivot element won't be necessary,
-   * so it will become the divider between two segments of the original segment.
-   * and now on, sorting the current element won't be necessary,
-   * thus pushing its index on the stack is not needed.
-   * And that is why we say in the 'iterativeQuickSort' function:
-   * stack.push(start, pivotIndex - 1);
-   * stack.push(pivotIndex + 1, end);
-   * Also, returning
-  */
-  return i;
+   [arr[i + 1], arr[end]] = [arr[end], arr[i + 1]];
+
+   /** 
+    * Because 'i' still points to the place before the pivot,
+    * code still needs to add '1' to 'i' to point to the pivot's position.
+    * Returning the index of the pivot's position 
+    * will help 'quicksort' to omit current pivot from sorting it again, 
+    * because pivot element is already sorted.
+   */
+ return i + 1;
 }
